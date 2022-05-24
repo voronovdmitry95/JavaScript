@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="author" content="Voronov Dmitry">
+</head>
+
+<body>
+    <h1>Bus schedules</h1>
+    <section class="message">
+        <section class="startTimeM" id="startTimeM"></section>
+        <section class="endTimeM" id="endTimeM"></section>
+        <section class="currentDate" id="currentDate"></section>
+        <b>
+            <section class="tExit" id="tExit"></section>
+        </b>
+    </section>
+
+    <script type="text/javascript">
+        let startTimeMSection = document.querySelector(".startTimeM");
+        let endTimeMSection = document.querySelector(".endTimeM");
+        let currentDateSection = document.querySelector(".currentDate");
+
+        let startTimeM = new Date();
+        let endTimeM = new Date();
+        startTimeM.setHours(6);
+        startTimeM.setMinutes(00);
+        endTimeM.setHours(00);
+        endTimeM.setMinutes(00);
+
+        //generate Array getDates
+        let currentTime = new Date();
+        currentTime.setHours(6, 0, 0);
+        let goalDay = new Date(currentTime);
+        let currIntervDay = goalDay * 1 + 1 * 18.25 * 3600 * 1000;
+
+        function getDates(d1, d2) {
+            let interMinutes = 15 * 60 * 1000;
+            for (var d = [], ms = d1 * 1, last = d2 * 1; ms < last; ms += interMinutes) {
+                d.push(new Date(ms));
+            }
+            return d;
+        }
+
+        updateTime(getDates(goalDay, currIntervDay));
+        setInterval(updateTime, 1000, getDates(goalDay, currIntervDay));
+
+        function updateTime(arr) {
+            let messageDate = getResultDate(arr);
+            let currentDate = new Date();
+            document.getElementById('tExit').innerHTML = 'tExit: ' + messageDate;
+            currentDateSection.innerHTML = 'currentDate: ' + currentDate;
+        }
+
+        function millisToMinutesAndSeconds(millis) {
+            let minutes = Math.floor(millis / 60000);
+            let seconds = ((millis % 60000) / 1000).toFixed(0);
+            return minutes + ":";
+        }
+
+        function getResultDate(arr) {
+            //currentTimeToBus
+            let tWalkStop = 5;
+            let currentDate = new Date();
+            function AddMinutesToDate(date, minutes) {
+                return new Date(date.getTime() + minutes * 60000);
+            }
+            let currentTimeToBus = AddMinutesToDate(currentDate, tWalkStop);
+            arr.sort(function (a, b) {
+                let distancea = Math.abs(currentTimeToBus - a);
+                let distanceb = Math.abs(currentTimeToBus - b);
+                return distancea - distanceb;
+            });
+
+            let beforedates = arr.filter(function (d) {
+                return d - currentTimeToBus < 0;
+            }),
+                afterdates = arr.filter(function (d) {
+                    return d - currentTimeToBus > 0;
+                });
+
+            let tOutFromHouse = afterdates[0] - currentTimeToBus;
+            function millisToMinutesAndSeconds(millis) {
+                let minutes = Math.floor(millis / 60000);
+                let seconds = ((millis % 60000) / 1000).toFixed(0);
+                return minutes + ":" + (seconds < 10 ? '0' : '') + seconds;
+            }
+            let result = millisToMinutesAndSeconds(tOutFromHouse);
+            return result;
+        }
+
+        let startTime = startTimeM.getHours() + ":" + (startTimeM.getMinutes() < 10 ? '0' : '') + startTimeM.getMinutes()
+        startTimeMSection.innerHTML = 'startTimeBus: ' + startTime + ' every day';
+        let endTime = endTimeM.getHours() + ":" + (endTimeM.getMinutes() < 10 ? '0' : '') + endTimeM.getMinutes()
+        endTimeMSection.innerHTML = 'endTimeBus: ' + endTime + ' every day';
+
+    </script>
+</body>
+
+</html>
